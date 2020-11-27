@@ -1,0 +1,2 @@
+# Ignore the AWS Lambda Go dist directory from the README instructions
+dist
