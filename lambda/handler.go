@@ -2,6 +2,8 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
+	"strings"
 
 	"github.com/aws/aws-lambda-go/lambda"
 )
@@ -59,13 +61,24 @@ var (
 	}
 )
 
-func scales() ([]byte, error) {
-	jsonData, err := json.Marshal(map[string]string{
-		"scales": "some scales",
+func scales(scaleType string) ([]byte, error) {
+	var scales []Scale
+	switch strings.ToUpper(scaleType) {
+	case "MAJOR":
+		scales = MajorScales
+	case "MINOR":
+		scales = MinorScales
+	default:
+		return nil, errors.New("Invalid input parameter")
+	}
+
+	jsonData, err := json.Marshal(map[string][]Scale{
+		"scales": scales,
 	})
 	if err != nil {
 		return nil, err
 	}
+
 	return jsonData, nil
 }
 
