@@ -4,13 +4,16 @@ using Pulumi.Aws.Lambda;
 
 class Lambda : Stack
 {
+    private static string LambdaGoZipFilePath { get; } = "../lambda/dist/handler.zip";
+    private static string LambdaGoEntryPoint { get; } = "handler";
+
     public Lambda()
     {
         var lambda = new Function("scalesLambda", new FunctionArgs
         {
             Runtime = "go1.x",
-            Code = new FileArchive("../lambda/handler.zip"),
-            Handler = "handler",
+            Code = new FileArchive(LambdaGoZipFilePath),
+            Handler = LambdaGoEntryPoint,
             Role = CreateLambdaRole().Arn,
         });
 
