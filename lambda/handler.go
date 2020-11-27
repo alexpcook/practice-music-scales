@@ -2,7 +2,7 @@ package main
 
 import (
 	"encoding/json"
-	"errors"
+	"fmt"
 	"strings"
 
 	"github.com/aws/aws-lambda-go/lambda"
@@ -69,7 +69,7 @@ func scales(scaleType string) ([]byte, error) {
 	case "MINOR":
 		scales = MinorScales
 	default:
-		return nil, errors.New("Invalid input parameter")
+		return nil, fmt.Errorf("Invalid scale type input parameter %s", scaleType)
 	}
 
 	jsonData, err := json.Marshal(map[string][]Scale{
