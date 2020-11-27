@@ -5,7 +5,7 @@ using Pulumi.Aws.Lambda;
 class Lambda : Stack
 {
     private static string LambdaGoZipFilePath { get; } = "../lambda/dist/handler.zip";
-    private static string LambdaGoEntryPoint { get; } = "handler";
+    private static string LambdaGoEntryPoint { get; } = "dist/handler";
 
     public Lambda()
     {
