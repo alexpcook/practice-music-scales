@@ -3,7 +3,9 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"math/rand"
 	"strings"
+	"time"
 
 	"github.com/aws/aws-lambda-go/lambda"
 )
@@ -71,6 +73,11 @@ func scales(scaleType string) ([]byte, error) {
 	default:
 		return nil, fmt.Errorf("Invalid scale type input parameter %s", scaleType)
 	}
+
+	rand.Seed(time.Now().UnixNano())
+	rand.Shuffle(len(scales), func(i, j int) {
+		scales[i], scales[j] = scales[j], scales[i]
+	})
 
 	jsonData, err := json.Marshal(map[string][]Scale{
 		"scales": scales,
