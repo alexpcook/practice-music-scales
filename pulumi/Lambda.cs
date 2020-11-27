@@ -1,17 +1,59 @@
 using Pulumi;
-using Pulumi.Aws.S3;
+using Pulumi.Aws.Iam;
+using Pulumi.Aws.Lambda;
 
 class Lambda : Stack
 {
     public Lambda()
     {
-        // Create an AWS resource (S3 Bucket)
-        var bucket = new Bucket("my-bucket");
+        var lambda = new Function("scalesLambda", new FunctionArgs
+        {
+            Runtime = "go1.x",
+            Code = new FileArchive("../lambda/handler.zip"),
+            Handler = "handler",
+            Role = CreateLambdaRole().Arn,
+        });
 
-        // Export the name of the bucket
-        this.BucketName = bucket.Id;
+        this.LambdaArn = lambda.Arn;
     }
 
     [Output]
-    public Output<string> BucketName { get; set; }
+    public Output<string> LambdaArn { get; set; }
+    
+    private static Role CreateLambdaRole()
+    {
+        var lambdaRole = new Role("lambdaRole", new RoleArgs
+        {
+            AssumeRolePolicy = @"{
+                ""Version"": ""2012-10-17"",
+                ""Statement"": [{
+                    ""Action"": ""sts:AssumeRole"",
+                    ""Principal"": {
+                        ""Service"": ""lambda.amazonaws.com""
+                    },
+                    ""Effect"": ""Allow"",
+                    ""Sid"": """"
+                }]
+            }"
+        });
+
+        var logPolicy = new RolePolicy("lambdaLogPolicy", new RolePolicyArgs
+        {
+            Role = lambdaRole.Id,
+            Policy = @"{
+                ""Version"": ""2012-10-17"",
+                ""Statement"": [{
+                    ""Effect"": ""Allow"",
+                    ""Action"": [
+                        ""logs:CreateLogGroup"",
+                        ""logs:CreateLogStream"",
+                        ""logs:PutLogEvents""
+                    ],
+                    ""Resource"": ""arn:aws:logs:*:*:*""
+                }]
+            }"
+        });
+
+        return lambdaRole;
+    }
 }
