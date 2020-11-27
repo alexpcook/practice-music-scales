@@ -1,6 +1,8 @@
 package main
 
 import (
+	"encoding/json"
+
 	"github.com/aws/aws-lambda-go/lambda"
 )
 
@@ -57,8 +59,14 @@ var (
 	}
 )
 
-func scales() (string, error) {
-	return "Return scales here", nil
+func scales() ([]byte, error) {
+	jsonData, err := json.Marshal(map[string]string{
+		"scales": "some scales",
+	})
+	if err != nil {
+		return nil, err
+	}
+	return jsonData, nil
 }
 
 func main() {
