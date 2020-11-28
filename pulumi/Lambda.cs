@@ -1,6 +1,7 @@
 using Pulumi;
 using Pulumi.Aws.Iam;
 using Pulumi.Aws.Lambda;
+using Pulumi.Aws.ApiGateway;
 
 class Lambda : Stack
 {
@@ -17,7 +18,39 @@ class Lambda : Stack
             Role = CreateLambdaRole().Arn,
         });
 
-        this.LambdaArn = lambda.Arn;
+        LambdaArn = lambda.Arn;
+
+        var apiGateway = new RestApi("scalesGateway", new RestApiArgs
+        {
+            Name = "ScalesGateway",
+            Description = "An API gateway for returning musical scales in a random order",
+            Policy = GetApiGatewayPolicy(),
+        });
+
+        var apiResource = new Pulumi.Aws.ApiGateway.Resource("scalesAPI", new Pulumi.Aws.ApiGateway.ResourceArgs
+        {
+            RestApi = apiGateway.Id,
+            PathPart = "{proxy+}",
+            ParentId = apiGateway.RootResourceId,
+        });
+
+        var apiMethod = new Method("scalesGET", new MethodArgs
+        {
+            HttpMethod = "GET",
+            Authorization = "NONE",
+            RestApi = apiGateway.Id,
+            ResourceId = apiResource.Id,
+        });
+
+        _ = new Integration("scalesLambdaIntegration", new IntegrationArgs
+        {
+            HttpMethod = "GET",
+            IntegrationHttpMethod = "GET",
+            ResourceId = apiResource.Id,
+            RestApi = apiGateway.Id,
+            Type = "AWS_PROXY",
+            Uri = lambda.InvokeArn,
+        });
     }
 
     [Output]
@@ -58,5 +91,29 @@ class Lambda : Stack
         });
 
         return lambdaRole;
+    }
+
+    private static string GetApiGatewayPolicy()
+    {
+        return @"{
+            ""Version"": ""2012-10-17"",
+            ""Statement"": [
+                {
+                    ""Action"": ""sts:AssumeRole"",
+                    ""Principal"": {
+                        ""Service"": ""lambda.amazonaws.com""
+                    },
+                    ""Effect"": ""Allow"",
+                    ""Sid"": """"
+                },
+                {
+                    ""Action"": ""execute-api:Invoke"",
+                    ""Resource"": ""*"",
+                    ""Principal"": ""*"",
+                    ""Effect"": ""Allow"",
+                    ""Sid"": """"
+                }
+            ]
+        }";
     }
 }
