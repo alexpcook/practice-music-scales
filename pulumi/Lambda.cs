@@ -6,9 +6,11 @@ using Pulumi.Aws.ApiGateway;
 
 class Lambda : Stack
 {
-    private static string LambdaGoZipFilePath { get; } = "../lambda/dist/handler.zip";
-    private static string LambdaGoEntryPoint { get; } = "dist/handler";
-
+    [Output]
+    public Output<string> LambdaArn { get; set; }
+    [Output]
+    public Output<string> GatewayUrl { get; set; }
+    
     public Lambda()
     {
         var account = Output.Create(GetCallerIdentity.InvokeAsync());
@@ -77,11 +79,9 @@ class Lambda : Stack
         GatewayUrl = Output.Create($"https://{apiGateway.Id}.execute-api.{regionName}.amazonaws.com/{apiDeployment.StageName}/");
     }
 
-    [Output]
-    public Output<string> LambdaArn { get; set; }
-    [Output]
-    public Output<string> GatewayUrl { get; set; }
-    
+    private static string LambdaGoZipFilePath { get; } = "../lambda/dist/handler.zip";
+    private static string LambdaGoEntryPoint { get; } = "dist/handler";
+
     private static Role CreateLambdaRole()
     {
         var lambdaRole = new Role("lambdaRole", new RoleArgs
