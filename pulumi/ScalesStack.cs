@@ -45,9 +45,9 @@ class ScalesStack : Stack
             DependsOn = {apiGateway},
         });
 
-        var apiMethod = new Method("scalesGET", new MethodArgs
+        var apiMethod = new Method("scalesPOST", new MethodArgs
         {
-            HttpMethod = "GET",
+            HttpMethod = "POST",
             Authorization = "NONE",
             RestApi = apiGateway.Id,
             ResourceId = apiResource.Id,
@@ -58,8 +58,8 @@ class ScalesStack : Stack
 
         var apiIntegration = new Integration("scalesLambdaIntegration", new IntegrationArgs
         {
-            HttpMethod = "GET",
-            IntegrationHttpMethod = "GET",
+            HttpMethod = "POST",
+            IntegrationHttpMethod = "POST",
             ResourceId = apiResource.Id,
             RestApi = apiGateway.Id,
             Type = "AWS_PROXY",
