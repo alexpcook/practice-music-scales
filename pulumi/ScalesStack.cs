@@ -65,7 +65,7 @@ class ScalesStack : Stack
             Action = "lambda:InvokeFunction",
             Function = lambda.Name,
             Principal = "apigateway.amazonaws.com",
-            SourceArn = $"arn:aws:execute-api:{regionName}:{accountId}:{apiGateway.Id}/*/*/*"
+            SourceArn = Output.Format($"arn:aws:execute-api:{regionName}:{accountId}:{apiGateway.Id}/*/*/*")
         });
 
         var apiDeployment = new Pulumi.Aws.ApiGateway.Deployment("scalesDeployment", new DeploymentArgs
@@ -76,7 +76,7 @@ class ScalesStack : Stack
             StageName = "dev",
         });
 
-        GatewayUrl = Output.Create($"https://{apiGateway.Id}.execute-api.{regionName}.amazonaws.com/{apiDeployment.StageName}/");
+        GatewayUrl = Output.Format($"https://{apiGateway.Id}.execute-api.{regionName}.amazonaws.com/{apiDeployment.StageName}/");
     }
 
     private static string LambdaGoZipFilePath { get; } = "../lambda/dist/handler.zip";
