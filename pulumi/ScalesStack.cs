@@ -50,7 +50,7 @@ class ScalesStack : Stack
             ResourceId = apiResource.Id,
         });
 
-        _ = new Integration("scalesLambdaIntegration", new IntegrationArgs
+        var apiIntegration = new Integration("scalesLambdaIntegration", new IntegrationArgs
         {
             HttpMethod = "GET",
             IntegrationHttpMethod = "GET",
