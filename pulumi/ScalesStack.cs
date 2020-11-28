@@ -38,7 +38,7 @@ class ScalesStack : Stack
         var apiResource = new Pulumi.Aws.ApiGateway.Resource("scalesAPI", new Pulumi.Aws.ApiGateway.ResourceArgs
         {
             RestApi = apiGateway.Id,
-            PathPart = "{proxy+}",
+            PathPart = "scales",
             ParentId = apiGateway.RootResourceId,
         }, new CustomResourceOptions
         {
