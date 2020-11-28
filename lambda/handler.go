@@ -63,14 +63,20 @@ var (
 	}
 )
 
-func scales(request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+func shuffleScales(scales []Scale) {
 	rand.Seed(time.Now().UnixNano())
-	rand.Shuffle(len(MajorScales), func(i, j int) {
-		MajorScales[i], MajorScales[j] = MajorScales[j], MajorScales[i]
+	rand.Shuffle(len(scales), func(i, j int) {
+		scales[i], scales[j] = scales[j], scales[i]
 	})
+}
+
+func scales(request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+	shuffleScales(MajorScales)
+	shuffleScales(MinorScales)
 
 	jsonData, err := json.Marshal(map[string][]Scale{
-		"scales": MajorScales,
+		"majorScales": MajorScales,
+		"minorScales": MinorScales,
 	})
 	if err != nil {
 		return events.APIGatewayProxyResponse{
