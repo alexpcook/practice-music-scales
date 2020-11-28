@@ -1,4 +1,5 @@
 using Pulumi;
+using Pulumi.Aws;
 using Pulumi.Aws.Iam;
 using Pulumi.Aws.Lambda;
 using Pulumi.Aws.ApiGateway;
@@ -10,6 +11,11 @@ class Lambda : Stack
 
     public Lambda()
     {
+        var account = Output.Create(GetCallerIdentity.InvokeAsync());
+        var accountId = account.Apply(a => a.AccountId);
+        var region = Output.Create(GetRegion.InvokeAsync());
+        var regionName = region.Apply(r => r.Name);
+
         var lambda = new Function("scalesLambda", new FunctionArgs
         {
             Runtime = "go1.x",
@@ -51,10 +57,30 @@ class Lambda : Stack
             Type = "AWS_PROXY",
             Uri = lambda.InvokeArn,
         });
+
+        var apiPermission = new Permission("scalesAPIPermission", new PermissionArgs
+        {
+            Action = "lambda:InvokeFunction",
+            Function = lambda.Name,
+            Principal = "apigateway.amazonaws.com",
+            SourceArn = $"arn:aws:execute-api:{regionName}:{accountId}:{apiGateway.Id}/*/*/*"
+        });
+
+        var apiDeployment = new Pulumi.Aws.ApiGateway.Deployment("scalesDeployment", new DeploymentArgs
+        {
+            Description = "Scales API deployment",
+            RestApi = apiGateway.Id,
+            StageDescription = "Development",
+            StageName = "dev",
+        });
+
+        GatewayUrl = Output.Create($"https://{apiGateway.Id}.execute-api.{regionName}.amazonaws.com/{apiDeployment.StageName}/");
     }
 
     [Output]
     public Output<string> LambdaArn { get; set; }
+    [Output]
+    public Output<string> GatewayUrl { get; set; }
     
     private static Role CreateLambdaRole()
     {
