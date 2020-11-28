@@ -45,9 +45,9 @@ class ScalesStack : Stack
             DependsOn = {apiGateway},
         });
 
-        var apiMethod = new Method("scalesPOST", new MethodArgs
+        var apiMethod = new Method("scalesGET", new MethodArgs
         {
-            HttpMethod = "POST",
+            HttpMethod = "GET",
             Authorization = "NONE",
             RestApi = apiGateway.Id,
             ResourceId = apiResource.Id,
@@ -58,7 +58,7 @@ class ScalesStack : Stack
 
         var apiIntegration = new Integration("scalesLambdaIntegration", new IntegrationArgs
         {
-            HttpMethod = "POST",
+            HttpMethod = "GET",
             IntegrationHttpMethod = "POST",
             ResourceId = apiResource.Id,
             RestApi = apiGateway.Id,
