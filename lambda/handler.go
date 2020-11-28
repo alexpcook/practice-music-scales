@@ -2,11 +2,11 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
+	"errors"
 	"math/rand"
-	"strings"
 	"time"
 
+	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
 )
 
@@ -63,30 +63,26 @@ var (
 	}
 )
 
-func scales(scaleType string) ([]byte, error) {
-	var scales []Scale
-	switch strings.ToUpper(scaleType) {
-	case "MAJOR":
-		scales = MajorScales
-	case "MINOR":
-		scales = MinorScales
-	default:
-		return nil, fmt.Errorf("Invalid scale type input parameter %s", scaleType)
-	}
-
+func scales(request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
 	rand.Seed(time.Now().UnixNano())
-	rand.Shuffle(len(scales), func(i, j int) {
-		scales[i], scales[j] = scales[j], scales[i]
+	rand.Shuffle(len(MajorScales), func(i, j int) {
+		MajorScales[i], MajorScales[j] = MajorScales[j], MajorScales[i]
 	})
 
 	jsonData, err := json.Marshal(map[string][]Scale{
-		"scales": scales,
+		"scales": MajorScales,
 	})
 	if err != nil {
-		return nil, err
+		return events.APIGatewayProxyResponse{
+			StatusCode: 500,
+			Body:       "Error forming json response body",
+		}, errors.New("Error forming json response body")
 	}
 
-	return jsonData, nil
+	return events.APIGatewayProxyResponse{
+		StatusCode: 200,
+		Body:       string(jsonData),
+	}, nil
 }
 
 func main() {
