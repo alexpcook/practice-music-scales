@@ -4,14 +4,14 @@ using Pulumi.Aws.Iam;
 using Pulumi.Aws.Lambda;
 using Pulumi.Aws.ApiGateway;
 
-class Lambda : Stack
+class ScalesStack : Stack
 {
     [Output]
     public Output<string> LambdaArn { get; set; }
     [Output]
     public Output<string> GatewayUrl { get; set; }
     
-    public Lambda()
+    public ScalesStack()
     {
         var account = Output.Create(GetCallerIdentity.InvokeAsync());
         var accountId = account.Apply(a => a.AccountId);
