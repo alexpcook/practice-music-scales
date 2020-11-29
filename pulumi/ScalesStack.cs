@@ -74,7 +74,7 @@ class ScalesStack : Stack
             Action = "lambda:InvokeFunction",
             Function = lambda.Name,
             Principal = "apigateway.amazonaws.com",
-            SourceArn = Output.Format($"arn:aws:execute-api:{regionName}:{accountId}:{apiGateway.Id}/*/*/*")
+            SourceArn = Output.Format($"arn:aws:execute-api:{regionName}:{accountId}:{apiGateway.Id}/*/{apiMethod.HttpMethod}{apiResource.Path}")
         }, new CustomResourceOptions
         {
             DependsOn = {apiGateway, apiResource, lambda},
