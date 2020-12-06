@@ -7,8 +7,6 @@ using Pulumi.Aws.ApiGateway;
 class ScalesStack : Stack
 {
     [Output]
-    public Output<string> LambdaArn { get; set; }
-    [Output]
     public Output<string> GatewayUrl { get; set; }
     
     public ScalesStack()
@@ -25,8 +23,6 @@ class ScalesStack : Stack
             Handler = LambdaGoEntryPoint,
             Role = CreateLambdaRole().Arn,
         });
-
-        LambdaArn = lambda.Arn;
 
         var apiGateway = new RestApi("scalesGateway", new RestApiArgs
         {
