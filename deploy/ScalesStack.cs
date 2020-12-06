@@ -17,7 +17,7 @@ class ScalesStack : Stack
         var region = Output.Create(GetRegion.InvokeAsync());
         var regionName = region.Apply(r => r.Name);
 
-        var lambda = new Function("scalesLambda", new FunctionArgs
+        var lambda = new Function("lambda", new FunctionArgs
         {
             Runtime = "go1.x",
             Code = new FileArchive(LambdaGoZipFilePath),
@@ -25,97 +25,106 @@ class ScalesStack : Stack
             Role = CreateLambdaRole().Arn,
         });
 
-        var s3 = new Bucket("scalesS3", new BucketArgs
+        var s3 = new Bucket("s3bucket", new BucketArgs
         {
             Acl = "private",
         });
 
         foreach (string fileType in StaticFileTypes)
         {
-            string id = "scales" + fileType;
+            string id = "s3object-" + fileType;
             _ = new BucketObject(id, new BucketObjectArgs
             {
                 Key = id,
                 Bucket = s3.Id,
                 Source = new FileAsset(StaticContentDirectory + fileType + "/site." + fileType),
                 ContentType = (fileType == "js") ? "text/javascript" : "text/" + fileType,
+            }, new CustomResourceOptions
+            {
+                Parent = s3,
             });
         }
 
-        var apiGateway = new RestApi("scalesGateway", new RestApiArgs
+        var gateway = new RestApi("gateway", new RestApiArgs
         {
-            Name = "ScalesGateway",
-            Description = "An API gateway for returning musical scales in a random order",
+            Name = "practice-music-scales",
+            Description = "an api gateway that returns musical scales in a random order",
             Policy = GetApiGatewayPolicy(),
         });
 
-        var apiResource1 = new Pulumi.Aws.ApiGateway.Resource("apiRoute", new Pulumi.Aws.ApiGateway.ResourceArgs
+        var apiResource = new Pulumi.Aws.ApiGateway.Resource("resource-api", new Pulumi.Aws.ApiGateway.ResourceArgs
         {
-            RestApi = apiGateway.Id,
+            RestApi = gateway.Id,
             PathPart = "api",
-            ParentId = apiGateway.RootResourceId,
+            ParentId = gateway.RootResourceId,
         }, new CustomResourceOptions
         {
-            DependsOn = { apiGateway },
+            DependsOn = { gateway },
+            Parent = gateway,
         });
 
-        var apiResource2 = new Pulumi.Aws.ApiGateway.Resource("scalesRoute", new Pulumi.Aws.ApiGateway.ResourceArgs
+        var scalesResource = new Pulumi.Aws.ApiGateway.Resource("resource-scales", new Pulumi.Aws.ApiGateway.ResourceArgs
         {
-            RestApi = apiGateway.Id,
+            RestApi = gateway.Id,
             PathPart = "scales",
-            ParentId = apiResource1.Id,
+            ParentId = apiResource.Id,
         }, new CustomResourceOptions
         {
-            DependsOn = { apiGateway, apiResource1 },
+            DependsOn = { gateway, apiResource },
+            Parent = apiResource,
         });
 
-        var apiMethod = new Method("scalesGET", new MethodArgs
+        var scalesResourceMethod = new Method("method-get", new MethodArgs
         {
             HttpMethod = "GET",
             Authorization = "NONE",
-            RestApi = apiGateway.Id,
-            ResourceId = apiResource2.Id,
+            RestApi = gateway.Id,
+            ResourceId = scalesResource.Id,
         }, new CustomResourceOptions
         {
-            DependsOn = { apiGateway, apiResource1, apiResource2 },
+            DependsOn = { gateway, apiResource, scalesResource },
+            Parent = scalesResource,
         });
 
-        var apiIntegration = new Integration("scalesLambdaIntegration", new IntegrationArgs
+        var scalesResourceIntegration = new Integration("integration-get", new IntegrationArgs
         {
             HttpMethod = "GET",
             IntegrationHttpMethod = "POST",
-            ResourceId = apiResource2.Id,
-            RestApi = apiGateway.Id,
+            ResourceId = scalesResource.Id,
+            RestApi = gateway.Id,
             Type = "AWS_PROXY",
             Uri = lambda.InvokeArn,
         }, new CustomResourceOptions
         {
-            DependsOn = { apiGateway, apiResource1, apiResource2, lambda },
+            DependsOn = { gateway, apiResource, scalesResource, lambda },
+            Parent = scalesResource,
         });
 
-        var apiPermission = new Permission("scalesAPIPermission", new PermissionArgs
+        var lambdaPermission = new Permission("gateway-permission", new PermissionArgs
         {
             Action = "lambda:InvokeFunction",
             Function = lambda.Name,
             Principal = "apigateway.amazonaws.com",
-            SourceArn = Output.Format($"arn:aws:execute-api:{regionName}:{accountId}:{apiGateway.Id}/*/{apiMethod.HttpMethod}{apiResource2.Path}")
+            SourceArn = Output.Format($"arn:aws:execute-api:{regionName}:{accountId}:{gateway.Id}/*/{scalesResourceMethod.HttpMethod}{scalesResource.Path}")
         }, new CustomResourceOptions
         {
-            DependsOn = { apiGateway, apiResource1, apiResource2, lambda },
+            DependsOn = { gateway, apiResource, scalesResource, lambda },
+            Parent = lambda,
         });
 
-        var apiDeployment = new Pulumi.Aws.ApiGateway.Deployment("scalesDeployment", new DeploymentArgs
+        var deployment = new Pulumi.Aws.ApiGateway.Deployment("deployment-dev", new DeploymentArgs
         {
             Description = "Scales API deployment",
-            RestApi = apiGateway.Id,
+            RestApi = gateway.Id,
             StageDescription = "Development",
             StageName = "dev",
         }, new CustomResourceOptions
         {
-            DependsOn = { apiGateway, apiResource1, apiResource2, lambda, apiPermission },
+            DependsOn = { gateway, apiResource, scalesResource, lambda, lambdaPermission },
+            Parent = gateway,
         });
 
-        GatewayUrl = Output.Format($"https://{apiGateway.Id}.execute-api.{regionName}.amazonaws.com/{apiDeployment.StageName}/");
+        GatewayUrl = Output.Format($"https://{gateway.Id}.execute-api.{regionName}.amazonaws.com/{deployment.StageName}/");
     }
 
     private static string LambdaGoZipFilePath { get; } = "../app/api/handler.zip";
@@ -125,7 +134,7 @@ class ScalesStack : Stack
 
     private static Role CreateLambdaRole()
     {
-        var lambdaRole = new Role("lambdaRole", new RoleArgs
+        var lambdaRole = new Role("iam-role", new RoleArgs
         {
             AssumeRolePolicy = @"{
                 ""Version"": ""2012-10-17"",
@@ -140,7 +149,7 @@ class ScalesStack : Stack
             }"
         });
 
-        var logPolicy = new RolePolicy("lambdaLogPolicy", new RolePolicyArgs
+        _ = new RolePolicy("iam-role-policy", new RolePolicyArgs
         {
             Role = lambdaRole.Id,
             Policy = @"{
@@ -155,6 +164,9 @@ class ScalesStack : Stack
                     ""Resource"": ""arn:aws:logs:*:*:*""
                 }]
             }"
+        }, new CustomResourceOptions
+        {
+            Parent = lambdaRole,
         });
 
         return lambdaRole;
