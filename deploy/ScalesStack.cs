@@ -3,6 +3,7 @@ using Pulumi.Aws;
 using Pulumi.Aws.Iam;
 using Pulumi.Aws.Lambda;
 using Pulumi.Aws.ApiGateway;
+using Pulumi.Aws.S3;
 
 class ScalesStack : Stack
 {
@@ -23,6 +24,23 @@ class ScalesStack : Stack
             Handler = LambdaGoEntryPoint,
             Role = CreateLambdaRole().Arn,
         });
+
+        var s3 = new Bucket("scalesS3", new BucketArgs
+        {
+            Acl = "private",
+        });
+
+        foreach (string fileType in StaticFileTypes)
+        {
+            string id = "scales" + fileType;
+            _ = new BucketObject(id, new BucketObjectArgs
+            {
+                Key = id,
+                Bucket = s3.Id,
+                Source = new FileAsset(StaticContentDirectory + fileType + "/site." + fileType),
+                ContentType = (fileType == "js") ? "text/javascript" : "text/" + fileType,
+            });
+        }
 
         var apiGateway = new RestApi("scalesGateway", new RestApiArgs
         {
@@ -92,6 +110,8 @@ class ScalesStack : Stack
 
     private static string LambdaGoZipFilePath { get; } = "../app/api/handler.zip";
     private static string LambdaGoEntryPoint { get; } = "handler";
+    private static string StaticContentDirectory { get; } = "../app/static/";
+    private static string[] StaticFileTypes { get; } = new string[3] { "html", "css", "js" };
 
     private static Role CreateLambdaRole()
     {
