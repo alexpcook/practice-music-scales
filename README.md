@@ -8,7 +8,4 @@ With the API endpoint in place, a good next step would be to write a front-end i
 
 ## How to build the AWS Lambda Go function
 
-See [GitHub AWS Lambda Go repo](https://github.com/aws/aws-lambda-go) for more information
-
-1. At the terminal in this directory, run `GOOS=linux GOARCH=amd64 go build -o dist/handler handler.go` to build a Linux executable
-2. Run `zip dist/handler.zip dist/handler` to create a zip file of the executable
+See [GitHub AWS Lambda Go repo](https://github.com/aws/aws-lambda-go) for more information. The shell script in the deploy directory builds the Go executable and zips it up prior to running `pulumi up`
