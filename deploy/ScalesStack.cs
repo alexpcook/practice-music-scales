@@ -49,38 +49,28 @@ class ScalesStack : Stack
             Policy = GetApiGatewayPolicy(),
         });
 
-        var apiResource = new Pulumi.Aws.ApiGateway.Resource("scalesAPI", new Pulumi.Aws.ApiGateway.ResourceArgs
-        {
-            RestApi = apiGateway.Id,
-            PathPart = "scales",
-            ParentId = apiGateway.RootResourceId,
-        }, new CustomResourceOptions
-        {
-            DependsOn = {apiGateway},
-        });
-
         var apiMethod = new Method("scalesGET", new MethodArgs
         {
             HttpMethod = "GET",
             Authorization = "NONE",
             RestApi = apiGateway.Id,
-            ResourceId = apiResource.Id,
+            ResourceId = apiGateway.RootResourceId,
         }, new CustomResourceOptions
         {
-            DependsOn = {apiGateway, apiResource},
+            DependsOn = {apiGateway},
         });
 
         var apiIntegration = new Integration("scalesLambdaIntegration", new IntegrationArgs
         {
             HttpMethod = "GET",
             IntegrationHttpMethod = "POST",
-            ResourceId = apiResource.Id,
+            ResourceId = apiGateway.RootResourceId,
             RestApi = apiGateway.Id,
             Type = "AWS_PROXY",
             Uri = lambda.InvokeArn,
         }, new CustomResourceOptions
         {
-            DependsOn = {apiGateway, apiResource, lambda},
+            DependsOn = {apiGateway, lambda},
         });
 
         var apiPermission = new Permission("scalesAPIPermission", new PermissionArgs
@@ -88,10 +78,10 @@ class ScalesStack : Stack
             Action = "lambda:InvokeFunction",
             Function = lambda.Name,
             Principal = "apigateway.amazonaws.com",
-            SourceArn = Output.Format($"arn:aws:execute-api:{regionName}:{accountId}:{apiGateway.Id}/*/{apiMethod.HttpMethod}{apiResource.Path}")
+            SourceArn = Output.Format($"arn:aws:execute-api:{regionName}:{accountId}:{apiGateway.Id}/*/{apiMethod.HttpMethod}/*")
         }, new CustomResourceOptions
         {
-            DependsOn = {apiGateway, apiResource, lambda},
+            DependsOn = {apiGateway, lambda},
         });
 
         var apiDeployment = new Pulumi.Aws.ApiGateway.Deployment("scalesDeployment", new DeploymentArgs
@@ -102,7 +92,7 @@ class ScalesStack : Stack
             StageName = "dev",
         }, new CustomResourceOptions
         {
-            DependsOn = {apiGateway, apiResource, lambda, apiPermission},
+            DependsOn = {apiGateway, lambda, apiPermission},
         });
 
         GatewayUrl = Output.Format($"https://{apiGateway.Id}.execute-api.{regionName}.amazonaws.com/{apiDeployment.StageName}/");
