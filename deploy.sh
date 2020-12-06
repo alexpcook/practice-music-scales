@@ -1,10 +1,11 @@
 #!/bin/bash
 
 # Build with Go
-cd lambda
-GOOS=linux GOARCH=amd64 go build -o dist/handler handler.go
-zip dist/handler.zip dist/handler
+cd app/api
+GOOS=linux GOARCH=amd64 go build -o handler handler.go
+zip handler.zip handler
+rm -f handler
 
 # Deploy to AWS
-cd ..
-pulumi up -C ./pulumi
+cd -
+pulumi up -C ./deploy

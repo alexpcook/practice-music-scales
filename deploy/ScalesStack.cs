@@ -94,8 +94,8 @@ class ScalesStack : Stack
         GatewayUrl = Output.Format($"https://{apiGateway.Id}.execute-api.{regionName}.amazonaws.com/{apiDeployment.StageName}/");
     }
 
-    private static string LambdaGoZipFilePath { get; } = "../lambda/dist/handler.zip";
-    private static string LambdaGoEntryPoint { get; } = "dist/handler";
+    private static string LambdaGoZipFilePath { get; } = "../app/api/handler.zip";
+    private static string LambdaGoEntryPoint { get; } = "handler";
 
     private static Role CreateLambdaRole()
     {
