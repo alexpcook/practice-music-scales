@@ -1,5 +1,16 @@
+# General setup
 resource "aws_api_gateway_rest_api" "scales_api" {
   name = join("-", [var.name_prefix, "gateway"])
+}
+
+resource "aws_api_gateway_deployment" "scales_api" {
+  rest_api_id = aws_api_gateway_rest_api.scales_api.id
+}
+
+resource "aws_api_gateway_stage" "scales_api" {
+  deployment_id = aws_api_gateway_deployment.scales_api.id
+  rest_api_id   = aws_api_gateway_rest_api.scales_api.id
+  stage_name    = "dev"
 }
 
 # S3 website proxy
