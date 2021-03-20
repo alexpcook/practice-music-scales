@@ -8,6 +8,11 @@ variable "aws_region" {
   type        = string
 }
 
+variable "name_prefix" {
+  description = "The naming prefix to apply to AWS resources."
+  type        = string
+}
+
 variable "lambda_zip" {
   description = "The zip archive containing the Lambda function code."
   type        = string
