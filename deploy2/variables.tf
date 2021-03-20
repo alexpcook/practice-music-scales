@@ -28,3 +28,18 @@ variable "public_ip" {
   type        = string
   sensitive   = true
 }
+
+variable "static_files_dir" {
+  description = "The base directory of the static website files to deploy to S3."
+  type        = string
+}
+
+variable "static_file_mime_types" {
+  description = "The MIME type mapping to apply to static website files in the S3 bucket."
+  type        = map(string)
+  default = {
+    html = "text/html"
+    css  = "text/css"
+    js   = "text/javascript"
+  }
+}
