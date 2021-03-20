@@ -43,3 +43,19 @@ resource "aws_api_gateway_resource" "scales_api_endpoint" {
   path_part   = "scales"
   rest_api_id = aws_api_gateway_rest_api.scales_api.id
 }
+
+resource "aws_api_gateway_method" "scales_api_endpoint" {
+  http_method   = "GET"
+  authorization = "NONE"
+  resource_id   = aws_api_gateway_resource.scales_api_endpoint.id
+  rest_api_id   = aws_api_gateway_rest_api.scales_api.id
+}
+
+resource "aws_api_gateway_integration" "scales_api_endpoint" {
+  http_method             = aws_api_gateway_method.scales_api_endpoint.http_method
+  integration_http_method = "POST"
+  resource_id             = aws_api_gateway_resource.scales_api_endpoint.id
+  rest_api_id             = aws_api_gateway_rest_api.scales_api.id
+  type                    = "AWS_PROXY"
+  uri                     = aws_lambda_function.scales_api.invoke_arn
+}
