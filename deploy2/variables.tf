@@ -22,3 +22,9 @@ variable "lambda_handler" {
   description = "The executable from the 'go build' command for the Lambda function to execute."
   type        = string
 }
+
+variable "public_ip" {
+  description = "The public IP address to allow access to the S3 bucket and API gateway."
+  type        = string
+  sensitive   = true
+}
