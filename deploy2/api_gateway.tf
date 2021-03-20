@@ -7,3 +7,13 @@ resource "aws_api_gateway_resource" "scales_api" {
   path_part   = "{bucketkey}"
   rest_api_id = aws_api_gateway_rest_api.scales_api.id
 }
+
+resource "aws_api_gateway_method" "scales_api" {
+  http_method   = "GET"
+  authorization = "NONE"
+  resource_id   = aws_api_gateway_resource.scales_api.id
+  rest_api_id   = aws_api_gateway_rest_api.scales_api.id
+  request_parameters = {
+    "method.request.path.bucketkey" = false
+  }
+}
