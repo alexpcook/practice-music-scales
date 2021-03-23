@@ -4,7 +4,7 @@ I play piano and wanted to devise a way to make practicing scales more fun and c
 
 To accomplish this goal, this repository contains an AWS Lambda function in Go invoked via an API Gateway endpoint. The Go handler returns a JSON response with both major and minor scales in a random order for practice. An S3 bucket (also proxied via the API Gateway) contains static HTML, CSS, and JavaScript to display the result of the Lambda function to the user. The AWS resources are deployed and managed with a Terraform stack.
 
-## How to build the AWS Lambda Go function
+## How to build and deploy the project
 
 See [GitHub AWS Lambda Go repo](https://github.com/aws/aws-lambda-go) for more information. The bash script in the deploy directory builds the Go executable and zips it up prior to handling the Terraform deployment:
 
