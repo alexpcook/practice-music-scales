@@ -5,6 +5,13 @@ resource "aws_api_gateway_rest_api" "scales_api" {
 
 resource "aws_api_gateway_deployment" "scales_api" {
   rest_api_id = aws_api_gateway_rest_api.scales_api.id
+
+  depends_on = [
+    aws_api_gateway_method.scales_s3_site,
+    aws_api_gateway_method.scales_api_endpoint,
+    aws_api_gateway_integration.scales_s3_site,
+    aws_api_gateway_integration.scales_api_endpoint,
+  ]
 }
 
 resource "aws_api_gateway_stage" "scales_api" {
