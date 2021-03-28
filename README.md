@@ -16,14 +16,14 @@ This option invokes a Lambda function written in Go via an API gateway endpoint.
 
 See [GitHub AWS Lambda Go repo](https://github.com/aws/aws-lambda-go) for more information. The Bash script builds the Go executable and zips it up prior to handling the Terraform deployment:
 
-```
+```bash
 cd aws/serverless
 ./_deploy.bash create
 ```
 
 To destroy the deployment, run the bash script again with a destroy argument:
 
-```
+```bash
 cd deploy
 ./_deploy.bash destroy
 ```
