@@ -21,7 +21,7 @@ cd aws/serverless
 ./_deploy.bash create
 ```
 
-To destroy the deployment, run the bash script again with a destroy argument:
+To destroy the deployment, run the Bash script again with a destroy argument:
 
 ```bash
 ./_deploy.bash destroy
