@@ -10,6 +10,7 @@ fi
 staticDir="../../app/static"
 lambdaDir="./lambda"
 lambdaExecutable="handler"
+lambdaHashFile=".lambda_hash"
 
 # Set Terraform environment variables
 export TF_VAR_lambda_zip="$lambdaDir/$lambdaExecutable.zip"
@@ -18,11 +19,17 @@ export TF_VAR_public_ip=$(curl -s https://checkip.amazonaws.com)
 export TF_VAR_static_files_dir=$staticDir
 
 if [ $action == "create" ]; then
-    # Build Go Lambda function handler
+    # Calculate whether the Go Lambda function handler needs to be built again
     cd $lambdaDir
-    GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -o $lambdaExecutable "$lambdaExecutable.go"
-    zip "$lambdaExecutable.zip" $lambdaExecutable
-    rm -f $lambdaExecutable
+    lastHash=$(cat $lambdaHashFile || echo "")
+    currentHash=$(cat "$lambdaExecutable.go" | openssl dgst -sha256)
+
+    if [ "$lastHash" != "$currentHash" ]; then
+        GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -o $lambdaExecutable "$lambdaExecutable.go"
+        zip "$lambdaExecutable.zip" $lambdaExecutable
+        rm -f $lambdaExecutable
+        echo -n $currentHash > $lambdaHashFile
+    fi
 
     # Deploy to AWS with Terraform
     cd -

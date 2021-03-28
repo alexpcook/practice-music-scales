@@ -1,2 +1,3 @@
-# Ignore the zip file deployed to AWS
+# Ignore the zip file deployed to AWS and the hash file of the Lambda function
 *.zip
+.lambda_hash
