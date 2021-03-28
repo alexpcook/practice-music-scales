@@ -43,3 +43,15 @@ variable "static_file_mime_types" {
     js   = "text/javascript"
   }
 }
+
+variable "static_files_index_document" {
+  description = "The file to use as the index document for the S3 bucket website."
+  type        = string
+  default     = "site.html"
+}
+
+variable "static_files_error_document" {
+  description = "The file to use as the error document for the S3 bucket website."
+  type        = string
+  default     = "error.html"
+}

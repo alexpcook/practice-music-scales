@@ -2,8 +2,8 @@ resource "aws_s3_bucket" "scales_api_website" {
   bucket_prefix = join("-", [var.name_prefix, "website"])
 
   website {
-    index_document = "site.html"
-    error_document = "error.html"
+    index_document = var.static_files_index_document
+    error_document = var.static_files_error_document
   }
 }
 
