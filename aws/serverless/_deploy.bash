@@ -7,7 +7,7 @@ if [ -z $action ]; then
     exit 1
 fi
 
-staticDir="../app/static"
+staticDir="../../app/static"
 lambdaDir="./lambda"
 lambdaExecutable="handler"
 
