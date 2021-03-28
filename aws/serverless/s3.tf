@@ -28,7 +28,7 @@ resource "aws_s3_bucket_object" "scales_api_website_files" {
   for_each = fileset(var.static_files_dir, "*.*")
 
   bucket       = aws_s3_bucket.scales_api_website.id
-  key          = split("/", each.key)[1]
+  key          = each.key
   source       = join("/", [var.static_files_dir, each.value])
   etag         = filemd5(join("/", [var.static_files_dir, each.value]))
   content_type = lookup(var.static_file_mime_types, split(".", each.key)[1], "text/plain")
