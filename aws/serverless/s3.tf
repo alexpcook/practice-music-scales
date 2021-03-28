@@ -3,6 +3,7 @@ resource "aws_s3_bucket" "scales_api_website" {
 
   website {
     index_document = "site.html"
+    error_document = "error.html"
   }
 }
 
