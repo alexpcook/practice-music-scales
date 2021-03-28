@@ -34,5 +34,5 @@ resource "aws_lambda_permission" "scales_api" {
   action        = "lambda:InvokeFunction"
   function_name = aws_lambda_function.scales_api.arn
   principal     = "apigateway.amazonaws.com"
-  source_arn    = "${aws_api_gateway_rest_api.scales_api.execution_arn}/*/*/*"
+  source_arn    = "${aws_api_gateway_rest_api.scales_api.execution_arn}/*/GET${aws_api_gateway_resource.scales_api_endpoint.path}"
 }
