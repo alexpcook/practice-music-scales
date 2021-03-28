@@ -25,7 +25,7 @@ resource "aws_s3_bucket_policy" "allow_public_read" {
 }
 
 resource "aws_s3_bucket_object" "scales_api_website_files" {
-  for_each = fileset(var.static_files_dir, "*/*")
+  for_each = fileset(var.static_files_dir, "*.*")
 
   bucket       = aws_s3_bucket.scales_api_website.id
   key          = split("/", each.key)[1]
