@@ -17,13 +17,15 @@ const (
 
 func main() {
 	http.HandleFunc(containerApiRoute, func(w http.ResponseWriter, r *http.Request) {
-		jsonData, err := json.Marshal(scales.GetRandomScales())
+		w.Header().Set("content-type", "application/json")
+
+		err := json.NewEncoder(w).Encode(scales.GetRandomScales())
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
 
-		fmt.Fprint(w, jsonData)
+		w.WriteHeader(http.StatusOK)
 	})
 
 	log.Fatal(
