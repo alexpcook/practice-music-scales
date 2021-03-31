@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Build the static files container
+# Build the Nginx static website container
 staticContainerSourceDir="../../app/static"
 staticContainerBuildDir="static_container"
 staticContainerFilesSubdir="static"
@@ -13,3 +13,12 @@ docker build --build-arg static_files_dir=$staticContainerFilesSubdir -t practic
 rm -rf $staticContainerBuildDir/$staticContainerFilesSubdir
 
 # Build the Go microservice container
+apiContainerBuildDir="scales_container"
+goBinary="main"
+
+cd $apiContainerBuildDir
+GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -o $goBinary
+docker build --build-arg go_binary=$goBinary -t practice-music-scales-api .
+
+rm -rf $goBinary
+cd -
