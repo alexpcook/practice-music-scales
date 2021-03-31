@@ -1,6 +1,6 @@
 resource "aws_default_vpc" "default" {
   tags = {
-    Name = join("-", [var.name_prefix, "default"])
+    Name = join("-", [var.name_prefix, "default", "vpc"])
   }
 }
 
