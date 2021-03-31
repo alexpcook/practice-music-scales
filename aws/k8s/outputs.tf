@@ -13,3 +13,6 @@ output "ecr_repository_password" {
 output "ecr_repository_url" {
   value = data.aws_ecr_authorization_token.token.proxy_endpoint
 }
+
+# This command can then be used to login to the Docker CLI:
+# tf output -raw ecr_repository_password | docker login $(tf output -raw ecr_repository_url) -u $(tf output -raw ecr_repository_username) --password-stdin

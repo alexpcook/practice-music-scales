@@ -1,5 +1,7 @@
 resource "aws_ecr_repository" "scales" {
-  name                 = var.name_prefix
+  count = length(var.ecr_repository_names)
+
+  name                 = var.ecr_repository_names[count.index]
   image_tag_mutability = "MUTABLE"
 
   encryption_configuration {
